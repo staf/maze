@@ -23,13 +23,14 @@ body {
     display: flex;
     flex-direction: column;
     flex: 1 0 auto;
+    justify-content: center;
+    overflow: hidden;
+    white-space: nowrap;
     padding: 20px 0;
     color: #DDD;
     text-align: center;
-    justify-content: center;
-    white-space: nowrap;
-    overflow: hidden;
     font-size: 12px;
+    line-height: 0;
 }
 
 .wall-0 {
