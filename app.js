@@ -1,6 +1,93 @@
+/**
+ * Setup the maze once the page has loaded. Though it is probably not necessary 
+ * to wait for the DOMContent since there are no external assets being loaded...
+ */
+document.addEventListener("DOMContentLoaded", function () {
+
+    let mazeElement = document.getElementById("game");
+    let width = 20;
+    let height = 20;
+
+    // Ensure we are displaying the grid properly.
+    document.getElementById("style").innerHTML = `.cell { flex-basis: ${(1 / width) * 100}%; }`;
+
+    let map = new CellMap(width, height);
+    map.Init();
+
+    Generator.BuildMaze(map);
+    //Generator.KnockDownWalls(map, 50);
+
+    // Print the cells on the page.
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            let cell = map.cells[y][x];
+            cell.node.textContent = cell.ToString();
+            cell.UpdateWalls();
+            mazeElement.appendChild(cell.node);
+        }
+    }
+
+});
+
+
+/**
+ * Get a random integer between the given min and max values
+ * 
+ * @param {number} min
+ * @param {number} max
+ * @return {number}
+ */
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+/**
+ * Get a random element from an array, but return null if the array is empty
+ * 
+ * @param {Array} array
+ * @return {null|*}
+ */
+function randomArrayValue(array) {
+    if (array.length > 0) {
+        return array[random(0, array.length - 1)];
+    }
+
+    return null;
+}
+
+/**
+ * Get the opposite direction.
+ * There should be a simpler way to do this right? This feels clunky...
+ * 
+ * Directions are represented as numbers.
+ *  - north/up = 0
+ *  - east/right = 1
+ *  - south/down = 2
+ *  - left/west = 3
+ * 
+ * @param {number} direction
+ * @return {number}
+ */
+function oppositeWall(direction) {
+    switch (direction) {
+        case 0:
+            return 2;
+        case 1:
+            return 3;
+        case 2:
+            return 0;
+        case 3:
+        default:
+            return 1;
+    }
+}
+
 class Cell {
     /**
-     * @property {CellMap} map
+     * @param {CellMap} map
+     * @param {number} x
+     * @param {number} y
      */
     constructor(map, x, y) {
         this.map = map;
@@ -20,10 +107,16 @@ class Cell {
         this.open = false;
     }
 
+    /**
+     * @return {string}
+     */
     ToString() {
         return `${this.x}, ${this.y}`;
     }
 
+    /**
+     * Set the class names for the cell's walls
+     */
     UpdateWalls() {
         this.walls.forEach((state, i) => {
             this.node.classList.toggle(`wall-${i}`, state);
@@ -46,6 +139,8 @@ class Cell {
     }
 
     /**
+     * Get the neighour cell in a specific direction.
+     * 
      * @return {null|Cell}
      */
     GetNeighbour(direction) {
@@ -62,6 +157,13 @@ class Cell {
         }
     }
 
+    /**
+     * Set the wall state of the cell in one direction.
+     * This also updates any potential neighbour in that direction
+     * 
+     * @param {number} direction
+     * @param {bool} state
+     */
     SetWall(direction, state) {
         this.walls[direction] = state;
         let neighbour = this.GetNeighbour(direction);
@@ -72,13 +174,20 @@ class Cell {
 }
 
 class CellMap {
+    /**
+     * @param {number} width
+     * @param {number} height
+     */
     constructor(width, height) {
         this.cells = [];
         this.height = height;
         this.width = width;
     }
 
-    GenerateMap() {
+    /**
+     * Create all the base cells for the map
+     */
+    Init() {
         this.cells = [];
         for (let y = 0; y < this.height; y++) {
             let row = [];
@@ -90,6 +199,10 @@ class CellMap {
     }
 
     /**
+     * Get a cell at a set of coordinates.
+     * 
+     * @param {number} x
+     * @param {number} y
      * @return {null|Cell}
      */
     GetCellAt(x, y) {
@@ -106,7 +219,12 @@ class CellMap {
 }
 
 class Generator {
-    static Generate(map) {
+    /**
+     * "Snakes" through the cells of a map randomly and creates the maze
+     * 
+     * @param {CellMap} map
+     */
+    static BuildMaze(map) {
 
         let startX = 0; //random(0, map.width - 1);
         let startY = random(0, map.height - 1);
@@ -160,6 +278,12 @@ class Generator {
 
     }
 
+    /**
+     * Knock down a set number of walls on a map
+     * 
+     * @param {CellMap} map
+     * @param {number} count
+     */
     static KnockDownWalls(map, count = 1) {
         for (let i = 0; i < count; i++) {
 
@@ -176,6 +300,12 @@ class Generator {
         }
     }
 
+    /**
+     * Get a random cell that has been marked as open
+     * 
+     * @param {CellMap} map
+     * @return {null|Cell}
+     */
     static RandomOpenCell(map) {
         let possibilities = [];
 
@@ -191,7 +321,11 @@ class Generator {
         return randomArrayValue(possibilities);
     }
 
-
+    /**
+     * Find a random neighbour of a cell that is closed.
+     * 
+     * @return {null|Cell}
+     */
     static RandomClosedSibling(cell) {
         let available = [];
         [0, 1, 2, 3].forEach(direction => {
@@ -204,56 +338,4 @@ class Generator {
         return randomArrayValue(available);
     }
 }
-
-function randomArrayValue(array) {
-    if (array.length > 0) {
-        return array[random(0, array.length - 1)];
-    }
-
-    return null;
-}
-
-function random(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function oppositeWall(direction) {
-    switch (direction) {
-        case 0:
-            return 2;
-        case 1:
-            return 3;
-        case 2:
-            return 0;
-        case 3:
-        default:
-            return 1;
-    }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    let board = document.getElementById("game");
-    let width = 20;
-    let height = 20;
-    let map = new CellMap(width, height);
-
-    document.getElementById("style").innerHTML = `.cell { flex-basis: ${(1 / width) * 100}%; }`;
-
-    map.GenerateMap(width, height);
-
-    Generator.Generate(map);
-    //Generator.KnockDownWalls(map, 50);
-
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            let cell = map.cells[y][x];
-            cell.node.textContent = cell.ToString();
-            cell.UpdateWalls();
-            board.appendChild(cell.node);
-        }
-    }
-
-});
-
 
