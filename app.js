@@ -1,33 +1,95 @@
+let data = {
+    maze: null,
+    seed: 123132
+};
+
+
 /**
  * Setup the maze once the page has loaded. Though it is probably not necessary 
  * to wait for the DOMContent since there are no external assets being loaded...
  */
 document.addEventListener("DOMContentLoaded", function () {
+    data.maze = document.getElementById("game");
+    let sizeInput = document.getElementById("size");
+    let seedInput = document.getElementById("seed");
+    let wallInput = document.getElementById("walls");
+    let settingsForm = document.getElementById("settings-form");
+    let seedButton = document.getElementById("random-seed");
 
-    let mazeElement = document.getElementById("game");
-    let width = 20;
-    let height = 20;
+    // Function to run when we generate a maze with input settings
+    const customMaze = e => {
+        if (e) e.preventDefault();
+        createMazeWithSettings(
+            parseInt(sizeInput.value),
+            parseInt(seedInput.value),
+            parseInt(wallInput.value)
+        );
+    }
+
+    // Set defaults
+    let defaults = {
+        seed: 123546,
+        size: 15,
+        knockDown: 0
+    }
+    sizeInput.value = defaults.size;
+    seedInput.value = defaults.seed;
+    wallInput.value = defaults.knockDown;
+
+    // Generate initial maze
+    customMaze();
+
+    // Register the listener to the settings form
+    settingsForm.addEventListener("submit", customMaze);
+
+    // Setup the random seed button
+    seedButton.addEventListener("click", function (e) {
+        e.preventDefault();
+        let max = 999999;
+        let min = 0;
+        seedInput.value = Math.floor(Math.random() * (max - min + 1)) + min;
+        customMaze();
+    });
+
+});
+
+function createMazeWithSettings(size, seed, knockDown) {
+
+    // Seed the random number generator
+    data.seed = seed;
 
     // Ensure we are displaying the grid properly.
-    document.getElementById("style").innerHTML = `.cell { flex-basis: ${(1 / width) * 100}%; }`;
+    document.getElementById("style").innerHTML = `.cell { flex-basis: ${(1 / size) * 100}%; }`;
 
-    let map = new CellMap(width, height);
+    let map = new CellMap(size, size);
     map.Init();
 
     Generator.BuildMaze(map);
-    //Generator.KnockDownWalls(map, 50);
+    Generator.KnockDownWalls(map, knockDown);
 
     // Print the cells on the page.
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
+    data.maze.innerHTML = "";
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
             let cell = map.cells[y][x];
             cell.node.textContent = cell.ToString();
             cell.UpdateWalls();
-            mazeElement.appendChild(cell.node);
+            data.maze.appendChild(cell.node);
         }
     }
+}
 
-});
+
+/**
+ * Seeded random number generator.
+ * The output is based on the 
+ * 
+ * @return {number}
+ */
+function seededRandom() {
+    let x = Math.sin(data.seed++) * 10000;
+    return x - Math.floor(x);
+}
 
 
 /**
@@ -38,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
  * @return {number}
  */
 function random(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+    return Math.floor(seededRandom() * (max - min + 1)) + min;
 }
 
 

@@ -7,8 +7,45 @@
 html,
 body {
     box-sizing: inherit;
+    min-height: 100vh;
 }
 
+body {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.sidebar {
+    flex: 0 0 200px;
+    background-color: #EFEFEF;
+    border-right: 1px solid #BBB;
+    padding: 30px;
+}
+
+.sidebar h2 {
+    margin-bottom: 30px;
+}
+
+input {
+    margin: 0 0 15px;
+    border: 1px solid #DDD;
+    padding: 5px 10px;
+}
+
+button {
+    display: block;
+    width: 100%;
+    border: 1px solid #DDD;
+    padding: 8px 12px;
+    background-color: #007ec3;
+    color: #FFF;
+}
+
+.divider {
+    color: #DDD;
+    border: 1px solid #BBB;
+    margin: 20px 0;
+}
 
 #game {
     display: flex;
@@ -16,7 +53,7 @@ body {
     /*border: 2px solid #BBB;*/
     height: 80vh;
     width: 80vh;
-    margin: 40px auto;
+    margin: auto;
 }
 
 .cell {

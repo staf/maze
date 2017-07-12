@@ -7,6 +7,26 @@
     <style id="style"></style>
 </head>
 <body>
+    <div class="sidebar">
+        <h2>Settings</h2>
+        <form id="settings-form">
+            <label for="size">Size</label>
+            <input type="number" id="size" placeholder="size">
+            
+            <label for="seed">Seed</label>
+            <input type="number" id="seed" placeholder="Random number seed">
+            
+            <label for="walls">Walls to knock down</label>
+            <input type="number" id="walls" placeholder="Walls to knock down">
+
+            <button type="submit">Update settings</button>
+        </form>
+
+        <hr class="divider">
+
+        <button id="random-seed">Random Seed</button>
+
+    </div>
     <div id="game"></div>
     <script src="app.js"></script>
 </body>
